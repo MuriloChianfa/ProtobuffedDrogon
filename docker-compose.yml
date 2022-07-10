@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  front:
+    build:
+      context: front
+      dockerfile: Dockerfile
+    image: front
+    container_name: front
+    hostname: front
+    ports:
+      - 80:80/tcp
+    volumes:
+      - ./front:/app
+
+  drogon:
+    build:
+      context: hello_world
+      dockerfile: Dockerfile
+    image: drogon
+    container_name: drogon
+    hostname: drogon
+    ports:
+      - 8848:8848
+    volumes:
+      - ./hello_world:/drogon/app

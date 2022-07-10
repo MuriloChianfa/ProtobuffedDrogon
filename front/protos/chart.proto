@@ -1,0 +1,9 @@
+syntax="proto3";
+package teste;
+
+message Chart
+{
+    int32 id=2;
+    string name=1;
+}
+

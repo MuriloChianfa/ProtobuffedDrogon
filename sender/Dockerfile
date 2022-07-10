@@ -32,4 +32,4 @@ WORKDIR /drogon/app/build
 
 CMD cmake .. -DCMAKE_CXX_FLAGS='-pthread -lprotobuf -lpthread -std=c++20' && \
     make && \
-    ./hello_world > /dev/stdout 2>&1
+    ./sender > /dev/stdout 2>&1

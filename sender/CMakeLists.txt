@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(hello_world CXX)
+project(sender CXX)
 
 include(CheckIncludeFileCXX)
 

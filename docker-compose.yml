@@ -14,7 +14,7 @@ services:
 
   drogon:
     build:
-      context: hello_world
+      context: sender
       dockerfile: Dockerfile
     image: drogon
     container_name: drogon
@@ -22,4 +22,4 @@ services:
     ports:
       - 8848:8848
     volumes:
-      - ./hello_world:/drogon/app
+      - ./sender:/drogon/app

@@ -25,56 +25,44 @@
     </div>
 
     <script>
-        var Chart;
+        var Interfaces;
 
         // Load a protobuf library
-		protobuf.load("protos/bundle.js", function(err, root) {
+		protobuf.load("protos/bundle.json", function(err, root) {
 			if (err) throw err;
 
 			// Set a protobuf object
-			window.Chart = root.lookupType("teste.Chart"); 
+			window.Interfaces = root.lookupType("sender.Interfaces"); 
         });
 
         // Connect to drogon WebSocket
-        const ws = new WebSocket('ws://127.0.0.1:8848/test');
+        const ws = new WebSocket('ws://127.0.0.1:8848/interfaces');
 
         // Set default WebSocket communication protocol to binary
         ws.binaryType = 'arraybuffer';
 
         ws.addEventListener('message', message => {
-            // Benchmark time to request
-            console.timeEnd('timeToRequest');
-
             // Convert binary protobuf message to Javascript object
-            let payload = Chart.decode(new Uint8Array(message.data));
+            let payload = Interfaces.decode(new Uint8Array(message.data));
 
 			console.log(payload);
-
-            let text = document.createElement('span');
-            text.innerHTML = payload.name;
-
-            document.getElementById('text').appendChild(text);
         });
 
         // Send request to WebSocket
         function send() {
             // Init benchmark of time to request
-            console.time('timeToRequest');
+            // console.time('timeToRequest');
 
             // Payload to sent
-			var payload = { id: 1, name: 'test' };
+			// var payload = { id: 1, name: 'test' };
 
 			// Create a new message
-			var message = window.Chart.create(payload);
-			var buffer = window.Chart.encode(message).finish();
+			// var message = window.Interfaces.create(payload);
+			// var buffer = window.Interfaces.encode(message).finish();
 
-            ws.send(buffer);
+            // ws.send(buffer);
         }
 
-        setInterval(() => {
-            send();
-        }, 5000);
- 
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -102,9 +90,6 @@
                 icon: 'success',
                 title: 'Conexão com o servidor de WebSocket efetuada com sucesso!'
             });
-
-            console.time('timeToRequest');
-            send();
         });
         </script>
 </body>

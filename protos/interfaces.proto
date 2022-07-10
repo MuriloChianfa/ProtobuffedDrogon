@@ -3,13 +3,7 @@ package sender;
 
 message IPAddress
 {
-    enum Type
-    {
-        AF_INET=0;
-        AF_INET6=1;
-    }
-
-    Type type=1;
+    string type=1;
     int64 address=2;
 }
 
@@ -18,13 +12,14 @@ message Interface
     string name=1;
     repeated IPAddress addresses=2;
 
-    message Bits
+    message Bandwidth
     {
         int64 rx=1;
         int64 tx=2;
     }
 
-    Bits bits=3;
+    Bandwidth old_bandwidth=3;
+    Bandwidth bandwidth=4;
 
     message Packets
     {
@@ -32,7 +27,8 @@ message Interface
         int64 tx=2;
     }
 
-    Packets packets=4;
+    Packets old_packets=5;
+    Packets packets=6;
 }
 
 message Interfaces

@@ -34,3 +34,4 @@
 front/protos
 sender/protos
 protos/*.pb.*
+protos/*.json

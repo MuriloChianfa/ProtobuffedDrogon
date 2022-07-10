@@ -2,7 +2,7 @@
 #include <drogon/PubSubService.h>
 #include <drogon/HttpAppFramework.h>
 
-#include <protos/chart.pb.h>
+#include <protos/interfaces.pb.h>
 
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -22,7 +22,7 @@ using namespace drogon;
 using namespace drogon::orm;
 using namespace drogon::nosql;
 
-class WebSocketChat : public drogon::WebSocketController<WebSocketChat>
+class WebSocket : public drogon::WebSocketController<WebSocket>
 {
   public:
     virtual void handleNewMessage(const WebSocketConnectionPtr &,
@@ -33,15 +33,15 @@ class WebSocketChat : public drogon::WebSocketController<WebSocketChat>
     virtual void handleNewConnection(const HttpRequestPtr &,
                                      const WebSocketConnectionPtr &) override;
     WS_PATH_LIST_BEGIN
-    WS_PATH_ADD("/test", Get);
+    WS_PATH_ADD("/interfaces", Get);
     WS_PATH_LIST_END
 };
 
-void WebSocketChat::handleNewMessage(const WebSocketConnectionPtr &wsConnPtr,
+void WebSocket::handleNewMessage(const WebSocketConnectionPtr &wsConnPtr,
                                      std::string &&message,
                                      const WebSocketMessageType &type)
 {
-    teste::Chart c;
+    sender::Interfaces c;
     std::string payload;
     int i = 0;
 
@@ -89,12 +89,12 @@ void WebSocketChat::handleNewMessage(const WebSocketConnectionPtr &wsConnPtr,
     }
 }
 
-void WebSocketChat::handleConnectionClosed(const WebSocketConnectionPtr &conn)
+void WebSocket::handleConnectionClosed(const WebSocketConnectionPtr &conn)
 {
     LOG_DEBUG << conn->localAddr().toIp() << " - Has disconnected.";
 }
 
-void WebSocketChat::handleNewConnection(const HttpRequestPtr &req,
+void WebSocket::handleNewConnection(const HttpRequestPtr &req,
                                         const WebSocketConnectionPtr &conn)
 {
     conn->setPingMessage("", 30s);

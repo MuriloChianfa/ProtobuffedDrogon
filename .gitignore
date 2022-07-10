@@ -31,4 +31,6 @@
 *.out
 *.app
 
-sender/build/*
+front/protos
+sender/protos
+protos/*.pb.*

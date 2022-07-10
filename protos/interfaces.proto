@@ -1,0 +1,42 @@
+syntax="proto3";
+
+package sender;
+
+message IPAddress
+{
+    enum Type
+    {
+        AF_INET=0;
+        AF_INET6=1;
+    }
+
+    Type type=1;
+    int64 address=2;
+}
+
+message Interface
+{
+    string name=1;
+    repeated IPAddress addresses=2;
+
+    message Bits
+    {
+        int64 rx=1;
+        int64 tx=2;
+    }
+
+    Bits bits=3;
+
+    message Packets
+    {
+        int64 rx=1;
+        int64 tx=2;
+    }
+
+    Packets packets=4;
+}
+
+message Interfaces
+{
+    repeated Interface interfaces=1;
+}

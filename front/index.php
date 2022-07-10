@@ -36,7 +36,7 @@
         });
 
         // Connect to drogon WebSocket
-        const ws = new WebSocket('ws://192.168.0.124:8848/test');
+        const ws = new WebSocket('ws://127.0.0.1:8848/test');
 
         // Set default WebSocket communication protocol to binary
         ws.binaryType = 'arraybuffer';

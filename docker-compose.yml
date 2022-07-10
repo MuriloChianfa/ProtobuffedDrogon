@@ -11,6 +11,7 @@ services:
       - 80:80/tcp
     volumes:
       - ./front:/app
+      - ./protos:/app/protos
 
   drogon:
     build:
@@ -23,3 +24,4 @@ services:
       - 8848:8848
     volumes:
       - ./sender:/drogon/app
+      - ./protos:/drogon/app/protos

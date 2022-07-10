@@ -30,6 +30,9 @@ RUN cd protobuf-3.11.0 && \
 RUN mkdir -p /drogon/app/build
 WORKDIR /drogon/app/build
 
-CMD cmake .. -DCMAKE_CXX_FLAGS='-pthread -lprotobuf -lpthread -std=c++20' && \
-    make && \
+CMD echo "[+] Compiling protobufs..." && \
+    protoc --proto_path=/drogon/app/protos --cpp_out=/drogon/app/protos /drogon/app/protos/interfaces.proto && \
+    echo "[+] Compiling drogon app..." && \
+    cmake .. -DCMAKE_CXX_FLAGS='-pthread -lprotobuf -lpthread -std=c++20' && make && \
+    echo "[+] Starting drogon app..." && \
     ./sender > /dev/stdout 2>&1

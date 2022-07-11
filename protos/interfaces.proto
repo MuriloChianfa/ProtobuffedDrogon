@@ -4,7 +4,7 @@ package sender;
 message IPAddress
 {
     string type=1;
-    int64 address=2;
+    string address=2;
 }
 
 message Interface
@@ -18,8 +18,7 @@ message Interface
         int64 tx=2;
     }
 
-    Bandwidth old_bandwidth=3;
-    Bandwidth bandwidth=4;
+    Bandwidth bandwidth=3;
 
     message Packets
     {
@@ -27,8 +26,7 @@ message Interface
         int64 tx=2;
     }
 
-    Packets old_packets=5;
-    Packets packets=6;
+    Packets packets=4;
 }
 
 message Interfaces

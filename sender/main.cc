@@ -109,7 +109,7 @@ void WebSocket::sendInterfaces()
             (family == AF_INET) ? "4" :
             (family == AF_INET6) ? "6" : "4"
         );
-        address->set_address(inet_addr(host));
+        address->set_address(host);
     }
 
     while (true)
@@ -134,23 +134,15 @@ void WebSocket::sendInterfaces()
 
                 struct rtnl_link_stats *stats = static_cast<rtnl_link_stats*>(ifa->ifa_data);
 
-                // old
-                interfaces.mutable_interfaces(i)->mutable_old_bandwidth()->set_rx(interfaces.mutable_interfaces(i)->mutable_bandwidth()->rx() ?: 1);
-                interfaces.mutable_interfaces(i)->mutable_old_bandwidth()->set_tx(interfaces.mutable_interfaces(i)->mutable_bandwidth()->tx() ?: 1);
-                interfaces.mutable_interfaces(i)->mutable_old_packets()->set_rx(interfaces.mutable_interfaces(i)->mutable_packets()->rx() ?: 1);
-                interfaces.mutable_interfaces(i)->mutable_old_packets()->set_tx(interfaces.mutable_interfaces(i)->mutable_packets()->tx() ?: 1);
-
-                // new bandwidth
-                interfaces.mutable_interfaces(i)->mutable_bandwidth()->set_rx(((stats->rx_bytes << 3) - interfaces.mutable_interfaces(i)->mutable_old_bandwidth()->rx()) ?: 1);
-                interfaces.mutable_interfaces(i)->mutable_bandwidth()->set_tx(((stats->tx_bytes << 3) - interfaces.mutable_interfaces(i)->mutable_old_bandwidth()->tx()) ?: 1);
-                interfaces.mutable_interfaces(i)->mutable_packets()->set_rx((stats->rx_packets - interfaces.mutable_interfaces(i)->mutable_old_packets()->rx()) ?: 1);
-                interfaces.mutable_interfaces(i)->mutable_packets()->set_tx((stats->tx_packets - interfaces.mutable_interfaces(i)->mutable_old_packets()->tx()) ?: 1);
+                interfaces.mutable_interfaces(i)->mutable_bandwidth()->set_rx(stats->rx_bytes);
+                interfaces.mutable_interfaces(i)->mutable_bandwidth()->set_tx(stats->tx_bytes);
+                interfaces.mutable_interfaces(i)->mutable_packets()->set_rx(stats->rx_packets);
+                interfaces.mutable_interfaces(i)->mutable_packets()->set_tx(stats->tx_packets);
             }
         }
 
         interfaces.AppendToString(&payload);
 
-        // wsConnPtr->send(payload, WebSocketMessageType::Binary);
         client->send(payload, WebSocketMessageType::Binary);
         payload.clear();
         i++;

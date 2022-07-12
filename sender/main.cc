@@ -33,8 +33,6 @@ using namespace drogon;
 using namespace drogon::orm;
 using namespace drogon::nosql;
 
-static WebSocketConnectionPtr client;
-
 class WebSocket : public drogon::WebSocketController<WebSocket>
 {
   public:
@@ -48,17 +46,32 @@ class WebSocket : public drogon::WebSocketController<WebSocket>
     WS_PATH_LIST_END
 };
 
+struct Subscriber
+{
+    drogon::SubscriberID id_;
+};
+
+PubSubService<std::string> subscribers;
+
 void WebSocket::handleNewConnection(const HttpRequestPtr &req, const WebSocketConnectionPtr &conn)
 {
     conn->setPingMessage("", 30s);
-    client = conn;
+
+    Subscriber subscriber;
+    subscriber.id_ = subscribers.subscribe("statistics", [conn](const std::string &topic, const std::string &message) {
+        (void)topic;
+        conn->send(message, WebSocketMessageType::Binary);
+    });
+    conn->setContext(std::make_shared<Subscriber>(std::move(subscriber)));
 
     LOG_DEBUG << conn->localAddr().toIp() << " - Has connected.";
 }
 
 void WebSocket::handleConnectionClosed(const WebSocketConnectionPtr &conn)
 {
-    client = nullptr;
+    auto &s = conn->getContextRef<Subscriber>();
+    subscribers.unsubscribe("statistics", s.id_);
+
     LOG_DEBUG << conn->localAddr().toIp() << " - Has disconnected.";
 }
 
@@ -69,8 +82,6 @@ void WebSocket::handleNewMessage(const WebSocketConnectionPtr &wsConnPtr, std::s
 
 void WebSocket::sendInterfaces()
 {
-    int i = 0;
-
     sender::Interfaces interfaces;
     std::string payload;
 
@@ -109,18 +120,12 @@ void WebSocket::sendInterfaces()
             (family == AF_INET) ? "4" :
             (family == AF_INET6) ? "6" : "4"
         );
+
         address->set_address(host);
     }
 
     while (true)
     {
-        if (client == nullptr)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            continue;
-        }
-
-        // Get values
         getifaddrs(&ifaddr);
         for (struct ifaddrs *ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
             if (ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_PACKET || ifa->ifa_data == NULL) {
@@ -144,9 +149,8 @@ void WebSocket::sendInterfaces()
 
         interfaces.AppendToString(&payload);
 
-        client->send(payload, WebSocketMessageType::Binary);
+        subscribers.publish("statistics", payload);
         payload.clear();
-        i++;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }

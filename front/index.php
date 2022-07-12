@@ -15,12 +15,15 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="//cdn.rawgit.com/dcodeIO/protobuf.js/6.X.X/dist/protobuf.min.js"></script>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <title>test</title>
+    <title>Interfaces</title>
 </head>
 <body>
     <div class="row">
-        <div class="col-md-12 mt-4">
-            <div id="content"></div>
+        <div class="col-md-6 mt-4">
+            <div id="bandwidth"></div>
+        </div>
+        <div class="col-md-6 mt-4">
+            <div id="packets"></div>
         </div>
     </div>
 
@@ -44,30 +47,15 @@
         ws.binaryType = 'arraybuffer';
 
         function fakeNowDate() {
-            Date.prototype.addHoras = function(horas){
-                this.setHours(this.getHours() + horas)
-            };
-            Date.prototype.addMinutos = function(minutos){
-                this.setMinutes(this.getMinutes() + minutos)
-            };
-            Date.prototype.addSegundos = function(segundos){
+            var dates = [];
+
+            Date.prototype.addSegundos = function(segundos) {
                 this.setSeconds(this.getSeconds() + segundos)
             };
-            Date.prototype.addDias = function(dias){
-                this.setDate(this.getDate() + dias)
-            };
-            Date.prototype.addMeses = function(meses){
-                this.setMonth(this.getMonth() + meses)
-            };
-            Date.prototype.addAnos = function(anos){
-                this.setYear(this.getFullYear() + anos)
-            };
-
-            var dates = [];
 
             for (let index = 0; index < timeInterval; index++) {
                 let date = new Date();
-                date.setSeconds(date.getSeconds() - index);
+                date.addSegundos(-index);
                 dates.push(date.toISOString().replace(/\.\d+/, ""));
             }
 
@@ -94,48 +82,83 @@
         });
 
         function createCharts(interface) {
-            var traces = [];
-            var date = fakeNowDate();
+            ['packets', 'bandwidth'].forEach(type => {
+                var date = fakeNowDate();
+                let traces = [];
 
-            traces.push({
-                x: date,
-                y: Array(date.length).fill(0),
-                name: `${interface.name} - ${interface.addresses[0].address}`,
-                type: 'line'
+                traces.push({
+                    x: date,
+                    y: Array(date.length).fill(0),
+                    name: `RX - ${interface.name}`,
+                    type: 'line',
+                    fill: 'tozeroy',
+                    line: {
+                        color: 'rgb(0, 0, 0)',
+                        width: 1
+                    },
+                });
+
+                traces.push({
+                    x: date,
+                    y: Array(date.length).fill(0),
+                    name: `TX - ${interface.name}`,
+                    type: 'line',
+                    fill: 'tozeroy',
+                    line: {
+                        color: 'rgb(100, 100, 100)',
+                        width: 1
+                    },
+                });
+
+                let chartContent = document.createElement('div');
+                chartContent.id = `chart-${type}-${interface.name}`;
+    
+                document.getElementById(type).appendChild(chartContent);
+
+                let exponent = {ticksuffix: 'PPS'};
+                let title = `Packets per second (PPS)`;
+                if (type === 'bandwidth') {
+                    exponent = {
+                        exponentformat: 'SI',
+                        ticksuffix: 'bps'
+                    };
+                    title = `Bits per second (bps)`;
+                }
+
+                Plotly.newPlot(
+                    document.querySelector(`#chart-${type}-${interface.name}`),
+                    traces,
+                    {
+                        title: title,
+                        showlegend: true,
+                        height: 300,
+                        legend: {
+                            orientation: 'v'
+                        },
+                        yaxis: exponent,
+                        hovermode: 'closest',
+                        barmode: 'relative',
+                        margin: {
+                            l: 50,
+                            r: 5,
+                            b: 40,
+                            t: 50
+                        },
+                    },
+                    {
+                        responsive: true,
+                        displayModeBar: false,
+                        paper_bgcolor: 'rgba(0, 0, 0, 0)',
+                        plot_bgcolor: 'rgba(0, 0, 0, 0)'
+                    }
+                );
             });
 
-            let chartContent = document.createElement('div');
-            chartContent.id = `chart${interface.name}`;
-
-            document.getElementById('content').appendChild(chartContent);
-
-            let chart = Plotly.newPlot(
-                document.querySelector(`#chart${interface.name}`),
-                traces,
-                {
-                    title: 'Traffic of interfaces',
-                    showlegend: true,
-                    height: 250,
-                    legend: {
-                        orientation: 'v'
-                    },
-                    hovermode: 'closest',
-                    barmode: 'relative',
-                    margin: {
-                        l: 50,
-                        r: 5,
-                        b: 40,
-                        t: 50
-                    },
-                },
-                {
-                    responsive: true,
-                    displayModeBar: false
-                }
-            );
-
-            let interfaceName = interface.name;
-            charts.push({interfaceName: interface.packets.tx});
+            charts.push({
+                name: interface.name,
+                packets: {rx: interface.packets.rx ?? 0, tx: interface.packets.tx ?? 0},
+                bandwidth: {rx: interface.bandwidth.rx ?? 0, tx: interface.bandwidth.tx ?? 0}
+            });
         }
 
         function getNewDateRange() {
@@ -146,20 +169,49 @@
         }
 
         function appendToCharts(interface) {
-            var newDateRange = getNewDateRange();
-            var chartContext = document.getElementById(`chart${interface.name}`);
-            var value = Math.abs(charts[interface.name] - interface.packets.tx);
-            charts[interface.name] = interface.packets.tx;
+            let newDateRange = getNewDateRange();
+            let chart = findChartByName(interface.name);
 
-            Plotly.extendTraces(chartContext, { y: [[value == 1 ? 0 : value]], x: [[newDateRange[1]]] }, [0]);
-            Plotly.relayout(chartContext, {
-                xaxis: {
-                    rangeslider: {
-                        thickness: 0.08,
-                        autorange: true
-                    },
-                    range: newDateRange
-                }
+            updatePacketsChart(chart, interface, newDateRange);
+            updateBandwidthChart(chart, interface, newDateRange);
+        }
+
+        function findChartByName(name) {
+            return window.charts.find(chart => chart.name === name);
+        }
+
+        function updatePacketsChart(chart, interface, newDateRange) {
+            let context = `chart-packets-${interface.name}`;
+
+            // RX calc
+            let rxValue = Math.abs(interface.packets.rx - chart.packets.rx);
+            chart.packets.rx = interface.packets.rx;
+
+            // TX calc
+            let txValue = Math.abs(interface.packets.tx - chart.packets.tx);
+            chart.packets.tx = interface.packets.tx;
+
+            updateChart(context, newDateRange, rxValue, txValue, interface);
+        }
+
+        function updateBandwidthChart(chart, interface, newDateRange) {
+            let context = `chart-bandwidth-${interface.name}`;
+
+            // RX calc
+            let rxValue = Math.abs(interface.bandwidth.rx - chart.bandwidth.rx);
+            chart.bandwidth.rx = interface.bandwidth.rx;
+
+            // TX calc
+            let txValue = Math.abs(interface.bandwidth.tx - chart.bandwidth.tx);
+            chart.bandwidth.tx = interface.bandwidth.tx;
+
+            updateChart(context, newDateRange, rxValue, txValue);
+        }
+
+        function updateChart(context, newDateRange, rxValue, txValue) {
+            Plotly.extendTraces(context, { y: [[Math.abs(rxValue)], [-Math.abs(txValue)]], x: [[newDateRange[1]], [newDateRange[1]]] }, [0, 1], 60);
+            Plotly.relayout(context, {
+                range: newDateRange
             });
         }
 

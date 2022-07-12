@@ -134,8 +134,9 @@ void WebSocket::sendInterfaces()
 
                 struct rtnl_link_stats *stats = static_cast<rtnl_link_stats*>(ifa->ifa_data);
 
-                interfaces.mutable_interfaces(i)->mutable_bandwidth()->set_rx(stats->rx_bytes);
-                interfaces.mutable_interfaces(i)->mutable_bandwidth()->set_tx(stats->tx_bytes);
+                // Convert bytes (octects) to bits: 1 << 3 = 8
+                interfaces.mutable_interfaces(i)->mutable_bandwidth()->set_rx(stats->rx_bytes << 3);
+                interfaces.mutable_interfaces(i)->mutable_bandwidth()->set_tx(stats->tx_bytes << 3);
                 interfaces.mutable_interfaces(i)->mutable_packets()->set_rx(stats->rx_packets);
                 interfaces.mutable_interfaces(i)->mutable_packets()->set_tx(stats->tx_packets);
             }

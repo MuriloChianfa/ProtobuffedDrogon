@@ -26,8 +26,28 @@
             <div id="packets"></div>
         </div>
     </div>
+    <script>
+        const timeInterval = 300;
+        var charts = [];
+        var Interfaces;
+        
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        Date.prototype.addSegundos = function(segundos) {
+            this.setSeconds(this.getSeconds() + segundos)
+        };
+    </script>
     <script src="js/protobuf.js"></script>
-    <script src="js/helpers.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/websocket.js"></script>
 </body>

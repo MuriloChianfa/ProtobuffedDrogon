@@ -1,5 +1,3 @@
-var Interfaces;
-
 // Load a protobuf library
 protobuf.load("protos/bundle.json", function(err, root) {
     if (err) throw err;

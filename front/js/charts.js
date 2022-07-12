@@ -1,5 +1,10 @@
-const timeInterval = 300;
-var charts = [];
+function fakeNowDate(interval = timeInterval) {
+    return Array(interval).fill(0).map((value, index) => {
+        let date = new Date();
+        date.addSegundos(-index);
+        return date.toISOString().replace(/\.\d+/, "");
+    });
+}
 
 function createTrace(date, name, color) {
     return {
@@ -33,7 +38,6 @@ function createChart(interface, type) {
         title = `Bits per second (bps)`;
     }
 
-    let options = {responsive: true, displayModeBar: false};
     let style = {
         title: title,
         showlegend: true,
@@ -49,7 +53,7 @@ function createChart(interface, type) {
     };
 
     let context = document.getElementById(id);
-    Plotly.newPlot(context, traces, style, options);
+    Plotly.newPlot(context, traces, style, {responsive: true, displayModeBar: false});
 
     // Fix to 0 the inital trace value
     updateChart(context, date, 0, 0, interface);

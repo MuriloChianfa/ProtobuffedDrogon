@@ -4,7 +4,7 @@ services:
     build:
       context: front
       dockerfile: Dockerfile
-    image: front
+    image: murilochianfa/protobuffed-drogon-frontend:1.0.0
     container_name: front
     hostname: front
     ports:
@@ -17,7 +17,7 @@ services:
     build:
       context: sender
       dockerfile: Dockerfile
-    image: drogon
+    image: murilochianfa/protobuffed-drogon-sender:1.0.0
     container_name: drogon
     hostname: drogon
     ports:

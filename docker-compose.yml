@@ -20,8 +20,9 @@ services:
     image: murilochianfa/protobuffed-drogon-sender:1.0.0
     container_name: drogon
     hostname: drogon
-    ports:
-      - 8848:8848
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
     volumes:
       - ./sender:/drogon/app
       - ./protos:/drogon/app/protos

@@ -12,12 +12,12 @@
 
 - Download docker images or build them: 
 ```bash
-docker-compose pull || docker-compose build
+docker compose pull || docker compose build
 ```
 
 - Run environment
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 - Access website to connect with drogon websocket: http://127.0.0.1/
